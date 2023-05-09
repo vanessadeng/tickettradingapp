@@ -1,15 +1,19 @@
-import { CustomError } from "./custom-error";
+import { ValidationError } from 'express-validator';
+import { CustomError } from './custom-error';
 
-export class NotFoundError extends CustomError {
-  statusCode = 404;
+export class RequestValidationError extends CustomError {
+  statusCode = 400;
 
-  constructor() {
-    super("Route not found");
+  constructor(public errors: ValidationError[]) {
+    super('Invalid request parameters');
 
-    Object.setPrototypeOf(this, NotFoundError.prototype);
+    // Only because we are extending a built in class
+    Object.setPrototypeOf(this, RequestValidationError.prototype);
   }
 
   serializeErrors() {
-    return [{ message: "Not Found" }];
+    return this.errors.map(err => {
+      return { message: err.msg, field: err.param };
+    });
   }
 }
